@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require('uuid');
 
 const holidaySchema = new mongoose.Schema({
     name: String,
@@ -17,7 +18,11 @@ const dealSchema = new mongoose.Schema({
     dealName: String,
     description: String,
     link: String,
-    uuid: String,
+    uuid: {
+        type: String,
+        default: uuidv4,
+        index: true
+    },
     holidays: [holidaySchema],
     locationDeals: [locationDeals]
 });

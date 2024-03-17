@@ -200,4 +200,19 @@ app.delete('/deal/:id', auth, async (req, res) => {
   }
 });
 
+app.get('/deals', auth, async (req, res) => {
+  try {
+    console.log("req.user", req.user);
+    const deals = await Deal.find({ uuid: req.user.userId });
+    console.log("deals", deals);
+    if (deals.length === 0) {
+      return res.status(404).send({ message: 'No deals found' });
+    }
+
+    res.send(deals);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
 module.exports = app;
