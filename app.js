@@ -3,10 +3,12 @@ const app = express();
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require('uuid');
 
 // require database connection
 const dbConnect = require("./db/dbConnect");
 const User = require("./db/userModel");
+const Deal = require("./db/dealModel");
 const auth = require("./auth");
 
 // execute database connection
@@ -45,6 +47,7 @@ app.post("/register", (request, response) => {
       const user = new User({
         email: request.body.email,
         password: hashedPassword,
+        uuid:  uuidv4()
       });
 
       // save the new user
@@ -99,7 +102,7 @@ app.post("/login", (request, response) => {
           //   create JWT token
           const token = jwt.sign(
             {
-              userId: user._id,
+              userId: user.uuid,
               userEmail: user.email,
             },
             "RANDOM-TOKEN",
@@ -138,6 +141,63 @@ app.get("/free-endpoint", (request, response) => {
 // authentication endpoint
 app.get("/auth-endpoint", auth, (request, response) => {
   response.send({ message: "You are authorized to access me" });
+});
+
+// create deals endpoint
+app.post('/deal', auth, async (req, res) => {
+  try {
+    const deal = new Deal({
+      ...req.body,
+      uuid: req.user.userId
+      // user: req.user.userId
+    });
+    await deal.save();
+    res.status(201).send(deal);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
+app.put('/deal/:id', auth, async (req, res) => {
+  try {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['dealName', 'description', 'link', 'holidays', 'locationDeals'];
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
+
+    if (!isValidOperation) {
+      return res.status(400).send({ error: 'Invalid updates!' });
+    }
+
+    const deal = await Deal.findOneAndUpdate(
+      { _id: req.params.id },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    console.log("req.body", req.body);
+    console.log("deals", deal);
+    if (!deal) {
+      return res.status(404).send({ message: 'Deal not found' });
+    }
+
+    res.send(deal);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
+app.delete('/deal/:id', auth, async (req, res) => {
+  try {
+    const deal = await Deal.findOneAndDelete({ _id: req.params.id });
+
+    if (!deal) {
+      return res.status(404).send({ message: 'Deal not found' });
+    }
+
+    res.send('Deal deleted successfully');
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
 });
 
 module.exports = app;
