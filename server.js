@@ -1,19 +1,18 @@
+const express = require("express");
 const http = require('http');
-const app = require('./app');
+const app = express();
+const dbConnect = require('./db/dbConnect');
 
-const normalizePort = val => {
-  const port = parseInt(val, 10);
+const userRoutes = require('./route/user');
+const dealsRoutes = require('./route/deals');
 
-  if (isNaN(port)) {
-    return val;
-  }
-  if (port >= 0) {
-    return port;
-  }
-  return false;
-};
-const port = normalizePort(process.env.PORT || '3000');
+console.log(process.env.PORT);
+const port = process.env.PORT || 3001;
+
 app.set('port', port);
+app.use("/users", userRoutes);
+app.use("/deals", dealsRoutes);
+dbConnect();
 
 const errorHandler = error => {
   if (error.syscall !== 'listen') {
