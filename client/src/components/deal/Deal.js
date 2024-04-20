@@ -16,7 +16,7 @@ import {
 // import DealForm from './DealForm';
 import classnames from 'classnames';
 
-function Dashboard(props) {
+function Deal(props) {
   const navigate = useNavigate();
   const [state, setState] = useState({
     dealName: '',
@@ -41,7 +41,7 @@ function Dashboard(props) {
           navigate('/');
         }
       });
-  
+
     return () => {
       isMounted = false; // cleanup function to set the flag false if the component is unmounted
     };
@@ -175,32 +175,27 @@ function Dashboard(props) {
               <p>{deal.description}</p>
             </div>
           ))}
-          <div className="col s12" style={{ paddingLeft: '11.250px' }}>
-              <button
-                style={{
-                  width: '150px',
-                  borderRadius: '3px',
-                  letterSpacing: '1.5px',
-                  marginTop: '1rem',
-                }}
-                onClick={handleAddDeal}
-                className="btn btn-large waves-effect waves-light hoverable blue accent-3"
-              >
-                Add Deal
-              </button>
-            </div>
-          <button
+          <div
+            className="container"
             style={{
-              width: '150px',
-              borderRadius: '3px',
-              letterSpacing: '1.5px',
-              marginTop: '1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
             }}
-            onClick={onLogoutClick}
-            className="btn btn-large waves-effect waves-light hoverable blue accent-3"
           >
-            Logout
-          </button>
+            <button
+              style={{
+                width: '150px',
+                borderRadius: '3px',
+                letterSpacing: '1.5px',
+                marginTop: '1rem',
+              }}
+              onClick={handleAddDeal}
+              className="btn btn-large waves-effect waves-light hoverable blue accent-3"
+            >
+              Add Deal
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -222,7 +217,7 @@ function useOutsideClick(ref, callback) {
   }, [ref, callback]);
 }
 
-Dashboard.propTypes = {
+Deal.propTypes = {
   logoutUser: PropTypes.func.isRequired,
   createDeal: PropTypes.func.isRequired,
   getDeals: PropTypes.func.isRequired,
@@ -241,4 +236,4 @@ export default connect(mapStateToProps, {
   getDeals,
   editDeal,
   deleteDeal,
-})(Dashboard);
+})(Deal);

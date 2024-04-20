@@ -6,6 +6,8 @@ const dbConnect = require('./db/dbConnect');
 const userRoutes = require('./route/user');
 const dealsRoutes = require('./route/deals');
 
+app.use(express.json());
+
 console.log(process.env.PORT);
 const port = process.env.PORT || 3001;
 

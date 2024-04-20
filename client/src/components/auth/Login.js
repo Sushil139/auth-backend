@@ -16,24 +16,12 @@ function Login(props) {
 
   useEffect(() => {
     if (props.auth.isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/deal');
     }
     if (props.errors) {
       setState({ ...state, errors: props.errors });
     }
   }, [props]);
-
-  // componentWillReceiveProps(nextProps) {
-  //   if (nextProps.auth.isAuthenticated) {
-  //     this.props.history.push("/dashboard");
-  //   }
-
-  //   if (nextProps.errors) {
-  //     this.setState({
-  //       errors: nextProps.errors
-  //     });
-  //   }
-  // }
 
   const onChange = (e) => {
     setState({ ...state, [e.target.id]: e.target.value });
@@ -66,11 +54,11 @@ function Login(props) {
               Don't have an account? <Link to="/register">Register</Link>
             </p>
           </div>
-          <form noValidate onSubmit={this.onSubmit}>
+          <form noValidate onSubmit={onSubmit}>
             <div className="input-field col s12">
               <input
-                onChange={this.onChange}
-                value={this.state.email}
+                onChange={onChange}
+                value={state.email}
                 error={errors.email}
                 id="email"
                 type="email"
@@ -86,8 +74,8 @@ function Login(props) {
             </div>
             <div className="input-field col s12">
               <input
-                onChange={this.onChange}
-                value={this.state.password}
+                onChange={onChange}
+                value={state.password}
                 error={errors.password}
                 id="password"
                 type="password"

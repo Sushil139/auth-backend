@@ -2,12 +2,12 @@
   "name": "auth-app",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "client-install": "npm install --prefix client",
-    "start": "node server.js",
-    "server": "nodemon server.js",
-    "client": "npm start --prefix client",
+    "start": "node --max-http-header-size=800000 server.js",
+    "server": "nodemon --max-http-header-size=800000 server.js",
+    "client": "npm start --max-http-header-size=800000 --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +17,7 @@
     "axios": "^1.6.8",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
+    "bootstrap": "^5.3.3",
     "classnames": "^2.5.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
@@ -25,11 +26,13 @@
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^4.0.0",
     "mongoose": "^5.13.22",
+    "react-bootstrap": "^2.10.2",
     "react-redux": "^9.1.0",
     "react-router-dom": "^6.22.3",
     "react-scripts": "^5.0.1",
     "redux": "^5.0.1",
-    "redux-thunk": "^3.1.0"
+    "redux-thunk": "^3.1.0",
+    "validator": "^13.11.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
