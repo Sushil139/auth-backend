@@ -91,10 +91,33 @@ function Deal(props) {
   const { user } = props.auth; // Changed this.props.auth to props.auth
   const { errors, deals } = state; // Changed this.state to state
   const [openDealId, setOpenDealId] = useState(null);
-  const ref = useRef(null);
+  const refs = useRef({});
 
-  useOutsideClick(ref, () => {
-    if (openDealId !== null) setOpenDealId(null);
+  useEffect(() => {
+    deals.forEach(deal => {
+      if (!refs.current[deal._id]) {
+        refs.current[deal._id] = React.createRef();
+      }
+    });
+  }, [deals]);
+  //   const refs = useRef({});
+  //   deals.forEach(deal => {
+  //     if (!refs.current[deal._id]) {
+  //       refs.current[deal._id] = React.createRef();
+  //     }
+  //   });
+
+  const refToDealId = Object.entries(refs.current).reduce(
+    (acc, [dealId, ref]) => {
+      acc[ref] = dealId;
+      return acc;
+    },
+    {}
+  );
+
+  useOutsideClick(Object.values(refs.current), ref => {
+    const dealId = refToDealId[ref];
+    if (openDealId === dealId) setOpenDealId(null);
   });
 
   return (
@@ -104,7 +127,7 @@ function Deal(props) {
     >
       <div className="row">
         <div className="landing-copy col s12 center-align">
-          {deals.map(deal => (
+          {deals.map((deal, index) => (
             <div
               key={deal._id}
               style={{
@@ -115,7 +138,7 @@ function Deal(props) {
               }}
             >
               <div
-                ref={ref}
+                ref={refs.current[deal._id]}
                 style={{
                   position: 'absolute',
                   top: '10px',
@@ -133,6 +156,7 @@ function Deal(props) {
 
                 {openDealId === deal._id && (
                   <div
+                    ref={refs.current[deal._id]}
                     style={{
                       position: 'absolute',
                       top: '40px',
@@ -202,10 +226,12 @@ function Deal(props) {
   );
 }
 
-function useOutsideClick(ref, callback) {
+function useOutsideClick(refs, callback) {
   useEffect(() => {
     function handleClickOutside(event) {
-      if (ref.current && !ref.current.contains(event.target)) {
+      if (
+        refs.some(ref => ref.current && !ref.current.contains(event.target))
+      ) {
         callback();
       }
     }
@@ -214,7 +240,7 @@ function useOutsideClick(ref, callback) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [ref, callback]);
+  }, [refs, callback]);
 }
 
 Deal.propTypes = {

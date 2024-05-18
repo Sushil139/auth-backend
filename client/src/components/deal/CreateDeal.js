@@ -25,7 +25,7 @@ function CreateDeal(props) {
     };
 
     await props.createDeal(newDeal)
-    navigate('/dashboard');
+    navigate('/deal');
   };
 
   return (

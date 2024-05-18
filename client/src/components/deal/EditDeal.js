@@ -35,7 +35,7 @@ function EditDeal(props) {
     };
 
     await props.editDeal(_id, newDeal);
-    navigate('/dashboard');
+    navigate('/deal');
   };
 
   return (

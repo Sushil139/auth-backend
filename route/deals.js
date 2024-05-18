@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const moment = require('moment');
+const axios = require('axios');
 
 // require database connection
 const dbConnect = require('../db/dbConnect');
@@ -104,4 +106,59 @@ router.get('/deal/:id', auth, async (req, res) => {
   }
 });
 
+router.get('/discount/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+    // Fetch the location data from ipapi
+    const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+    console.log('response', response.data);
+    const userLocation = response.data.country_name;
+
+    console.log('userLocation', userLocation);
+    const currentDate = moment().format('MM-DD');
+
+    // Fetch the deal document from the database
+    const deal = await Deal.findOne({ _id: id });
+
+    if (!deal) {
+      return res.status(404).send({ message: 'Deal not found.' });
+    }
+
+    // Extract the location-based and holiday-based discounts
+    locationDiscount = 0;
+
+    if (userLocation !== undefined) {
+      locationDiscount = deal.locationDeals.find(
+        deal => deal.countryName.toUpperCase() === userLocation.toUpperCase()
+      );
+    }
+
+    const holidayDiscount = deal.holidays.find(
+      holiday => moment(holiday.date).format('MM-DD') === currentDate
+    );
+
+    let discount;
+    let message;
+
+    // Compare the discounts and construct the response message
+    if (!locationDiscount && !holidayDiscount) {
+      message = 'No discounts available at the moment.';
+    } else if (
+      !holidayDiscount ||
+      (locationDiscount && locationDiscount.discount > holidayDiscount.discount)
+    ) {
+      discount = locationDiscount.discount;
+      message = `Hey! ${userLocation} is a wonderful place. Try ${locationDiscount.coupon} to get ${discount}% off.`;
+    } else {
+      discount = holidayDiscount.discount;
+      message = `Hey! Today is ${holidayDiscount.name}. Get ${discount}% off by applying ${holidayDiscount.coupon}.`;
+    }
+
+    res.send({ message, discount });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
 module.exports = router;
