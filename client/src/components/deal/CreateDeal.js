@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { createDeal } from '../../actions/authActions';
+import { createDeal, getCountryParity } from '../../actions/authActions';
 import { useNavigate } from 'react-router-dom';
 import './CreateDeal.css';
 
 function CreateDeal(props) {
   const [screen, setScreen] = useState('location');
-
+  const mapping = null;
   const navigate = useNavigate();
   const [state, setState] = useState({
     dealName: '',
@@ -24,7 +25,23 @@ function CreateDeal(props) {
     holidayDiscount: '',
     holidayCoupon: '',
     locationNext: false,
+    countryParity: [],
+    countries: [],
   });
+
+  useEffect(() => {
+    const fetchCountryParity = async () => {
+      const countryParityData = await props.getCountryParity();
+      setState(prevState => ({
+        ...prevState,
+        locationDeals: countryParityData,
+      }));
+    };
+
+    fetchCountryParity();
+  }, []);
+
+  console.log('locationDeals', state.locationDeals)
 
   const onChange = e => {
     setState(prevState => ({ ...prevState, [e.target.id]: e.target.value }));
@@ -73,6 +90,7 @@ function CreateDeal(props) {
     e.preventDefault();
 
     const newDeal = { ...state };
+
     delete newDeal.isLocationDiscount;
     delete newDeal.isHolidayDiscount;
 
@@ -81,11 +99,18 @@ function CreateDeal(props) {
   };
 
   if (state.locationNext && state.holidayNext) {
-    return locationHolidayDiscount(onChange, state, onNextLocation, onSubmit, screen);
+    return <LocationHolidayDiscount
+    onChange={onChange}
+    state={state}
+    setState={setState}
+    onNextLocation={onNextLocation}
+    onSubmit={onSubmit}
+    screen={screen}
+  />;
   } else if (state.locationNext && !state.holidayNext) {
-    return returnLocationDiscount(onChange, state, onSubmit);
+    return <ReturnLocationDiscount onChange={onChange} state={state} setState={setState} onSubmit={onSubmit} />;
   } else if (state.holidayNext) {
-    return returnHolidayDiscount(onChange, state, onSubmit);
+    return <ReturnHolidayDiscount onChange={onChange} state={state} onSubmit={onSubmit} />;
   }
 
   return (
@@ -147,42 +172,126 @@ function CreateDeal(props) {
   );
 }
 
-function returnLocationDiscount(onChange, state, onSubmit) {
+function ReturnLocationDiscount({onChange, state, setState, onSubmit}) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [countryName, setCountryName] = useState('');
+  const [discount, setDiscount] = useState('');
+  const [coupon, setCoupon] = useState('');
+
+  var countries = state.locationDeals.reduce(
+    (acc, curr) =>
+      acc.concat(
+        Array.isArray(curr.countries)
+          ? curr.countries.map(country => ({
+              ...country,
+              discount: curr.discount,
+              coupon: curr.coupon,
+            }))
+          : []
+      ),
+    []
+  );
+
+  state.locationDeals = countries;
+
+  if (countries.length === 0) {
+    countries = state.locationDeals;
+  }
+
+  const handleAddCountry = () => {
+    const updatedCountries = [...state.locationDeals];
+    const index = updatedCountries.findIndex(
+      country => country.countryName === countryName
+    );
+
+    if (index !== -1) {
+      updatedCountries[index] = { countryName, discount, coupon };
+    } else {
+      updatedCountries.push({ countryName, discount, coupon });
+    }
+
+    setState(prevState => ({ ...prevState, locationDeals: updatedCountries }));
+    setDialogOpen(false);
+  };
+
+  const handleDiscountChange = (e, index) => {
+    const discount = Number(e.target.value);
+    if (!isNaN(discount) && discount >= 0 && discount <= 100) {
+      const updatedCountries = countries.map((country, i) => {
+        if (i === index) {
+          return { ...country, discount: Number(e.target.value) };
+        }
+        return country;
+      });
+      setState(prevState => ({
+        ...prevState,
+        locationDeals: updatedCountries,
+      }));
+    }
+  };
+
+  const handleCouponChange = (e, index) => {
+    const updatedCountries = countries.map((country, i) => {
+      if (i === index) {
+        return { ...country, coupon: e.target.value };
+      }
+      return country;
+    });
+    setState(prevState => ({ ...prevState, locationDeals: updatedCountries }));
+  };
+
   return (
     <form noValidate onSubmit={onSubmit}>
-      <div>
-        <label htmlFor="countryName">Country Name</label>
-        <input
-          onChange={onChange}
-          value={state.countryName}
-          id="countryName"
-          type="text"
-        />
-      </div>
-      <div>
-        <label htmlFor="discount">Discount</label>
-        <input
-          onChange={onChange}
-          value={state.discount}
-          id="discount"
-          type="text"
-        />
-      </div>
-      <div>
-        <label htmlFor="coupon">Coupon</label>
-        <input
-          onChange={onChange}
-          value={state.coupon}
-          id="coupon"
-          type="text"
-        />
-      </div>
+      {/* <button onClick={(e) => {e.preventDefault(); setDialogOpen(true);}}>
+        Add custom discounts for a country
+      </button>
+      {dialogOpen && (
+        <div>
+          <label>
+            Country Name:
+            <input type="text" onChange={e => setCountryName(e.target.value)} />
+          </label>
+          <label>
+            Discount:
+            <input type="text" onChange={e => setDiscount(e.target.value)} />
+          </label>
+          <label>
+            Coupon:
+            <input type="text" onChange={e => setCoupon(e.target.value)} />
+          </label>
+          <button onClick={handleAddCountry}>Add Country</button>
+          <button onClick={() => setDialogOpen(false)}>Cancel</button>
+        </div>
+      )} */}
+      {countries.map((country, index) => (
+        <div key={index}>
+          <h3>{country.countryName}</h3>
+          <div>
+            <label htmlFor={`discount${index}`}>Discount</label>
+            <input
+              onChange={e => handleDiscountChange(e, index)}
+              value={country.discount}
+              id={`discount${index}`}
+              type="text"
+            />
+          </div>
+          <div>
+            <label htmlFor={`coupon${index}`}>Coupon</label>
+            <input
+              onChange={e => handleCouponChange(e, index)}
+              value={country.coupon}
+              id={`coupon${index}`}
+              type="text"
+            />
+          </div>
+        </div>
+      ))}
       <button type="submit">Submit</button>
     </form>
   );
 }
 
-function returnHolidayDiscount(onChange, state, onSubmit) {
+function ReturnHolidayDiscount({onChange, state, onSubmit}) {
   return (
     <form noValidate onSubmit={onSubmit}>
       <div>
@@ -221,12 +330,33 @@ function returnHolidayDiscount(onChange, state, onSubmit) {
   );
 }
 
-function locationHolidayDiscount(onChange, state, onNextLocation, onSubmit, screen) {
+function LocationHolidayDiscount(
+  {onChange,
+  state,
+  setState,
+  onNextLocation,
+  onSubmit,
+  screen}
+) {
   if (screen === 'location') {
-    return returnLocationDiscount(onChange, state, onNextLocation);
+    return <ReturnLocationDiscount onChange={onChange} state={state} setState={setState} onSubmit={onSubmit} />;
   } else if (screen === 'holiday') {
-    return returnHolidayDiscount(onChange, state, onSubmit);
+    return <ReturnHolidayDiscount onChange={onChange} state={state} onSubmit={onSubmit} />;
   }
 }
 
-export default connect(null, { createDeal })(CreateDeal);
+CreateDeal.propTypes = {
+  createDeal: PropTypes.func.isRequired,
+  getCountryParity: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+};
+
+const mapStateToProps = state => ({
+  auth: state.auth,
+  errors: state.errors,
+});
+
+export default connect(mapStateToProps, {
+  createDeal,
+  getCountryParity,
+})(CreateDeal);

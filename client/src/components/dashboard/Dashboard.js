@@ -1,86 +1,172 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Line, Bar } from 'react-chartjs-2';
+import { Dropdown } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
+import { getDeals } from '../../actions/authActions';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-// import Dropdown from 'react-bootstrap/Dropdown';
-import Button from 'react-bootstrap/Button';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import { useNavigate } from 'react-router-dom';
+import useOutsideClick from '../../utils/useOutsideBlock';
+import './Dashboard.css';
 import {
-  logoutUser,
-  createDeal,
-  getDeals,
-  editDeal,
-  deleteDeal,
-} from '../../actions/authActions';
-// import Deal from './Deal';
-// import DealForm from './DealForm';
-import classnames from 'classnames';
+  Chart,
+  LineController,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+} from 'chart.js';
+import 'chartjs-adapter-date-fns';
+
+Chart.register(
+  LineController,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement
+);
+
+const colors = [
+  'rgba(255, 120, 132, 0.9)', // red
+  'rgba(54, 162, 235, 0.9)', // blue
+  'rgba(255, 206, 86, 0.9)', // yellow
+  'rgba(75, 192, 192, 0.9)', // green
+  'rgba(153, 102, 255, 0.9)', // purple
+  'rgba(255, 159, 64, 0.9)', // orange
+  // Add more colors if needed
+];
 
 function Dashboard(props) {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
   const [state, setState] = useState({
+    selectedProduct: 'All Products',
+    visitorCount: 0,
+    chartData: {},
     dealName: '',
     description: '',
     deals: [],
     errors: {},
+    countryChartData: {},
   });
 
-  useEffect(() => {
-    let isMounted = true; // add a flag to prevent state update if the component is unmounted
+  const dropdownRef = useRef(null);
+  useOutsideClick(dropdownRef, () => setOpen(false));
 
-    props
-      .getDeals()
-      .then(deals => {
-        if (isMounted) {
+  useEffect(
+    () => {
+      const fetchDeals = async () => {
+        try {
+          const deals = await props.getDeals();
+          console.log('deals', deals);
           setState(prevState => ({ ...prevState, deals }));
+
+          const filteredDeals =
+            state.selectedProduct === 'All Products'
+              ? deals
+              : deals.filter(deal => deal.dealName === state.selectedProduct);
+
+          // Calculate the total number of visitors for all products
+          const totalVisitors = filteredDeals.reduce(
+            (sum, deal) => sum + deal.visitors,
+            0
+          );
+
+          // Create an array of the last 30 dates
+          const dates = Array.from({ length: 30 }, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            return d.toISOString().split('T')[0]; // format as yyyy-mm-dd
+          }).reverse();
+
+          // For each date, sum up the visitor counts of all deals
+          const data = dates.map(date => {
+            let count = 0;
+            let uniqueCount = 0;
+            const countryCounts = {};
+
+            filteredDeals.forEach(deal => {
+              const visitorPerDay = deal.visitorsPerDay.find(
+                v => v.date.split('T')[0] === date
+              );
+              if (visitorPerDay) {
+                count += visitorPerDay.count;
+                uniqueCount += visitorPerDay.uniqueCount;
+
+                visitorPerDay.countryVisitors.forEach(({ country, count }) => {
+                  countryCounts[country] =
+                    (countryCounts[country] || 0) + count;
+                });
+              }
+            });
+
+            return { date, count, uniqueCount, countryCounts };
+          });
+
+          // Create the new chart data
+          const newChartData = {
+            labels: dates,
+            datasets: [
+              {
+                label: 'Total Visitors',
+                data: data.map(d => d.count),
+                fill: false,
+                backgroundColor: 'rgb(75, 192, 192)',
+                borderColor: 'rgba(75, 192, 192, 0.7)',
+              },
+              {
+                label: 'Unique Visitors',
+                data: data.map(d => d.uniqueCount),
+                fill: false,
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgba(255, 99, 132, 0.7)',
+              },
+            ],
+          };
+
+          console.log('dataaaaa', data);
+
+          const allCountries = [
+            ...new Set(data.flatMap(d => Object.keys(d.countryCounts))),
+          ];
+
+          const countryChartData = {
+            labels: dates,
+            datasets: allCountries.map((country, index) => ({
+              label: country,
+              data: data.map(d => d.countryCounts[country] || 0),
+              backgroundColor: colors[index % colors.length],
+              borderColor: colors[index % colors.length],
+            })),
+          };
+
+          setState(prevState => ({
+            ...prevState,
+            visitorCount: totalVisitors,
+            chartData: newChartData,
+            countryChartData: countryChartData,
+          }));
+        } catch (err) {
+          if (err.response && err.response.status !== 404) {
+            console.log(err);
+            // navigate('/');
+          }
         }
-      })
-      .catch(err => {
-        if (err.response && err.response.status !== 404 && isMounted) {
-          console.log(err);
-          navigate('/');
-        }
-      });
+      };
 
-    return () => {
-      isMounted = false; // cleanup function to set the flag false if the component is unmounted
-    };
-  }, []);
-
-  const onChange = e => {
-    setState(prevState => ({ ...prevState, [e.target.id]: e.target.value }));
-  };
-
-  const onSubmit = e => {
-    e.preventDefault();
-
-    const newDeal = {
-      dealName: state.dealName,
-      description: state.description,
-    };
-
-    props.createDeal(newDeal);
-  };
-
-  const handleAddDeal = deal => {
-    navigate('/create-deal');
-    setState(prevState => ({
-      ...prevState,
-      deals: [...prevState.deals, deal],
-    }));
-  };
-
-  const handleEditDeal = _id => {
-    navigate(`/edit-deal/${_id}`);
-  };
-
-  const handleDeleteDeal = _id => {
-    props.deleteDeal(_id);
-    setState(prevState => ({
-      ...prevState,
-      deals: prevState.deals.filter(deal => deal._id !== _id),
-    }));
-  };
+      fetchDeals();
+    },
+    [state.selectedProduct]
+  );
 
   const onLogoutClick = async e => {
     e.preventDefault();
@@ -88,145 +174,125 @@ function Dashboard(props) {
     navigate('/');
   };
 
-  const { user } = props.auth; // Changed this.props.auth to props.auth
-  const { errors, deals } = state; // Changed this.state to state
-  const [openDealId, setOpenDealId] = useState(null);
-  const ref = useRef(null);
-
-  useOutsideClick(ref, () => {
-    if (openDealId !== null) setOpenDealId(null);
-  });
-
+  console.log(
+    'charts',
+    state.visitorCount,
+    state.chartData,
+    state.countryChartData
+  );
   return (
-    <div
-      style={{ height: '75vh', maxHeight: '75vh', overflowY: 'auto' }}
-      className="container valign-wrapper"
-    >
-      <div className="row">
-        <div className="landing-copy col s12 center-align">
-          {deals.map(deal => (
-            <div
-              key={deal._id}
-              style={{
-                border: '1px solid black',
-                padding: '10px',
-                margin: '10px',
-                position: 'relative',
-              }}
-            >
-              <div
-                ref={ref}
-                style={{
-                  position: 'absolute',
-                  top: '10px',
-                  right: '10px',
-                }}
-              >
-                <Button
-                  variant="success"
-                  onClick={() =>
-                    setOpenDealId(openDealId === deal._id ? null : deal._id)
-                  }
-                >
-                  <i className="material-icons">more_vert</i>
-                </Button>
+    <div className="dashboard">
+      <h1>Product Visitor Dashboard</h1>
 
-                {openDealId === deal._id && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '40px',
-                      right: '10px',
-                      padding: '0px',
-                      borderRadius: '5px',
-                      boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    <ButtonGroup vertical>
-                      <Button
-                        style={{
-                          width: '100px',
-                          fontSize: '80%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        onClick={() => handleEditDeal(deal._id)}
-                      >
-                        <i className="material-icons">edit</i> Edit
-                      </Button>
-                      <Button
-                        style={{
-                          width: '100px',
-                          fontSize: '80%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        onClick={() => handleDeleteDeal(deal._id)}
-                      >
-                        <i className="material-icons">delete</i> Delete
-                      </Button>
-                    </ButtonGroup>
-                  </div>
-                )}
-              </div>
-              <h2>{deal.dealName}</h2>
-              <p>{deal.description}</p>
-            </div>
-          ))}
-          <div className="col s12" style={{ paddingLeft: '11.250px' }}>
-            <button
-              style={{
-                width: '150px',
-                borderRadius: '3px',
-                letterSpacing: '1.5px',
-                marginTop: '1rem',
-              }}
-              onClick={handleAddDeal}
-              className="btn btn-large waves-effect waves-light hoverable blue accent-3"
-            >
-              Add Deal
-            </button>
-          </div>
-          <button
-            style={{
-              width: '150px',
-              borderRadius: '3px',
-              letterSpacing: '1.5px',
-              marginTop: '1rem',
-            }}
-            onClick={onLogoutClick}
-            className="btn btn-large waves-effect waves-light hoverable blue accent-3"
+      <Dropdown
+        className="dropdown"
+        show={open}
+        onSelect={selectedProduct => {
+          setState(prevState => ({ ...prevState, selectedProduct }));
+          setOpen(false); // close the dropdown
+        }}
+        onToggle={isOpen => setOpen(isOpen)} // update the open state when the dropdown is toggled
+        rootCloseEvent="click"
+      >
+        <Dropdown.Toggle
+          variant="success"
+          id="dropdown-basic"
+          style={{ width: '150px' }}
+        >
+          {state.selectedProduct} <FontAwesomeIcon icon={faCaretDown} />
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu style={{ flexDirection: 'column', width: '100%' }}>
+          <Dropdown.Item
+            style={{ display: 'block', backgroundColor: 'white' }}
+            eventKey="All Products"
           >
-            Logout
-          </button>
+            All Products
+          </Dropdown.Item>
+          {state?.deals?.map(deal => (
+            <Dropdown.Item
+              style={{ display: 'block', backgroundColor: 'white' }}
+              eventKey={deal.dealName}
+              key={deal._id}
+            >
+              {deal.dealName}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
+
+      <div className="dashboard-content" style={{ paddingTop: '20px' }}>
+        <div className="visitor-count" style={{ padding: '20px' }}>
+          <h2>Visitor Count</h2>
+          <p>{state.visitorCount}</p>
+        </div>
+
+        <div className="chart">
+          {state?.chartData?.datasets && state.chartData.datasets.length > 0 && (
+            <Line
+              data={state.chartData}
+              options={{
+                responsive: true, // Enable responsiveness
+                maintainAspectRatio: true,
+                scales: {
+                  x: {
+                    type: 'category',
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Date',
+                    },
+                  },
+                },
+              }}
+            />
+          )}
+        </div>
+
+        <div className="country-chart">
+          {state?.countryChartData?.datasets &&
+            state.countryChartData.datasets.length > 0 && (
+              <Bar
+                data={state.countryChartData}
+                options={{
+                  responsive: true, // Enable responsiveness
+                  maintainAspectRatio: true,
+                  scales: {
+                    x: {
+                      stacked: true,
+                      type: 'category',
+                      scaleLabel: {
+                        display: true,
+                        labelString: 'Date',
+                      },
+                    },
+                    y: {
+                      stacked: true,
+                    },
+                  },
+                }}
+              />
+            )}
         </div>
       </div>
+      {/* <button
+        style={{
+          width: '150px',
+          borderRadius: '3px',
+          letterSpacing: '1.5px',
+          marginTop: '1rem',
+          padding: '10px',
+        }}
+        onClick={onLogoutClick}
+        className="btn btn-large waves-effect waves-light hoverable blue accent-3"
+      >
+        Logout
+      </button> */}
     </div>
   );
 }
 
-function useOutsideClick(ref, callback) {
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (ref.current && !ref.current.contains(event.target)) {
-        callback();
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [ref, callback]);
-}
-
 Dashboard.propTypes = {
-  logoutUser: PropTypes.func.isRequired,
-  createDeal: PropTypes.func.isRequired,
   getDeals: PropTypes.func.isRequired,
-  deleteDeal: PropTypes.func.isRequired,
   auth: PropTypes.object.isRequired,
 };
 
@@ -235,10 +301,9 @@ const mapStateToProps = state => ({
   errors: state.errors,
 });
 
-export default connect(mapStateToProps, {
-  logoutUser,
-  createDeal,
-  getDeals,
-  editDeal,
-  deleteDeal,
-})(Dashboard);
+export default connect(
+  mapStateToProps,
+  {
+    getDeals,
+  }
+)(Dashboard);

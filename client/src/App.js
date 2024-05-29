@@ -24,6 +24,7 @@ import Home from './components/home/Home';
 import Deal from './components/deal/Deal';
 
 import './App.css';
+import GetCode from './components/deal/GetCode';
 
 // Check for token to keep user logged in
 if (localStorage.jwtToken) {
@@ -44,30 +45,6 @@ if (localStorage.jwtToken) {
     window.location.href = './login';
   }
 }
-// class App extends Component {
-//   render() {
-//     console.log('App.js');
-//     return (
-//       <Provider store={store}>
-//         <Router>
-//           <div className="App">
-//             <Navbar />
-//             <Routes>
-//               <Route path="/" element={<Landing />} />
-//               <Route path="/register" element={<Register />} />
-//               <Route path="/login" element={<Login />} />
-//               <Route path="/home" element={<Home />} />
-//               <Route path="/dashboard" element={<Dashboard />} />
-//               <Route path="/edit-deal/:_id" element={<EditDeal />} />
-//               <Route path="/create-deal" element={<CreateDeal />} />
-//             </Routes>
-//           </div>
-//         </Router>
-//       </Provider>
-//     );
-//   }
-// }
-// export default App;
 
 const MainContent = () => {
   const location = useLocation();
@@ -83,6 +60,7 @@ const MainContent = () => {
           <Route path="/edit-deal/:_id" element={<EditDeal />} />
           <Route path="/create-deal" element={<CreateDeal />} />
           <Route path="/deal" element={<Deal />} />
+          <Route path="/get-code/:_id" element={<GetCode />} />
         </Routes>
       </div>
     </div>

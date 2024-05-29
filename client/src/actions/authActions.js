@@ -224,6 +224,37 @@ export const deleteDeal = id => dispatch => {
     });
 };
 
+export const getCountryParity = () => dispatch => {
+  console.log('getCountryParity');
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/deals/country-parity', {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.jwtToken,
+        },
+      })
+      .then(res => {
+        resolve(res.data);
+      })
+      .catch(err => {
+        console.log('err', err);
+        if (err.response) {
+          dispatch({
+            type: GET_ERRORS,
+            payload: err.response.data,
+          });
+        } else {
+          // Handle the error appropriately when err.response is undefined
+          dispatch({
+            type: GET_ERRORS,
+            payload: { message: err.message },
+          });
+        }
+        reject(err);
+      });
+  });
+};
+
 // Set logged in user
 export const setCurrentUser = decoded => {
   return {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-// import Dropdown from 'react-bootstrap/Dropdown';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import { useNavigate } from 'react-router-dom';
@@ -12,9 +11,6 @@ import {
   editDeal,
   deleteDeal,
 } from '../../actions/authActions';
-// import Deal from './Deal';
-// import DealForm from './DealForm';
-import classnames from 'classnames';
 
 function Deal(props) {
   const navigate = useNavigate();
@@ -80,6 +76,10 @@ function Deal(props) {
       ...prevState,
       deals: prevState.deals.filter(deal => deal._id !== _id),
     }));
+  };
+
+  const handleGetCode = _id => {
+    navigate(`/get-code/${_id}`);
   };
 
   const onLogoutClick = async e => {
@@ -178,6 +178,18 @@ function Deal(props) {
                         onClick={() => handleEditDeal(deal._id)}
                       >
                         <i className="material-icons">edit</i> Edit
+                      </Button>
+                      <Button
+                        style={{
+                          width: '100px',
+                          fontSize: '80%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        onClick={() => handleGetCode(deal._id)}
+                      >
+                        <i className="material-icons"></i> Get Code
                       </Button>
                       <Button
                         style={{
