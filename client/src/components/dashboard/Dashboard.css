@@ -63,3 +63,11 @@
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+.hoverable-button {
+    transition: background-color 0.3s ease;
+  }
+  
+  .hoverable-button:hover {
+    background-color: #edebe1; /* Change this to the color you want when hovering */
+  }

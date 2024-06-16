@@ -1,0 +1,85 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px;
+  background-color: #eff3f5;
+  box-shadow: 0 2px 4px #d2e1f3;
+}
+
+.header h2 {
+  margin: 0;
+}
+
+.deals-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
+}
+
+.deal-card {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  margin: 20px;
+  min-width: 400px;
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+.deal-card:hover {
+  transform: translateY(-5px);
+}
+
+.deal-card button {
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  border: none;
+  padding: 0px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.deal-card button:hover {
+  color: #6e7275;
+}
+
+.add-deal-btn {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 0px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-deal-btn:hover {
+  background-color: #1976d2;
+}
+
+.three-dots {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}

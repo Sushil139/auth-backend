@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
-import { Dropdown } from 'react-bootstrap';
+import { Dropdown, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
@@ -47,7 +47,6 @@ const colors = [
 
 function Dashboard(props) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
   const [state, setState] = useState({
     selectedProduct: 'All Products',
     visitorCount: 0,
@@ -59,8 +58,11 @@ function Dashboard(props) {
     countryChartData: {},
   });
 
-  const dropdownRef = useRef(null);
-  useOutsideClick(dropdownRef, () => setOpen(false));
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const wrapperRef = useRef(null);
+  useOutsideClick(wrapperRef, () => setMenuOpen(false));
 
   useEffect(
     () => {
@@ -184,42 +186,59 @@ function Dashboard(props) {
     <div className="dashboard">
       <h1>Product Visitor Dashboard</h1>
 
-      <Dropdown
-        className="dropdown"
-        show={open}
-        onSelect={selectedProduct => {
-          setState(prevState => ({ ...prevState, selectedProduct }));
-          setOpen(false); // close the dropdown
-        }}
-        onToggle={isOpen => setOpen(isOpen)} // update the open state when the dropdown is toggled
-        rootCloseEvent="click"
-      >
-        <Dropdown.Toggle
+      <div ref={wrapperRef}>
+        <Button
           variant="success"
           id="dropdown-basic"
           style={{ width: '150px' }}
+          onClick={() => setMenuOpen(prev => !prev)}
+          ref={wrapperRef}
         >
           {state.selectedProduct} <FontAwesomeIcon icon={faCaretDown} />
-        </Dropdown.Toggle>
+        </Button>
 
-        <Dropdown.Menu style={{ flexDirection: 'column', width: '100%' }}>
-          <Dropdown.Item
-            style={{ display: 'block', backgroundColor: 'white' }}
-            eventKey="All Products"
+        {menuOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: 'white',
+              width: '150px',
+              boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
+              zIndex: 1,
+            }}
           >
-            All Products
-          </Dropdown.Item>
-          {state?.deals?.map(deal => (
-            <Dropdown.Item
-              style={{ display: 'block', backgroundColor: 'white' }}
-              eventKey={deal.dealName}
-              key={deal._id}
+            <div
+              className="hoverable-button"
+              style={{ padding: '12px 16px', cursor: 'pointer' }}
+              onClick={() => {
+                setState(prevState => ({
+                  ...prevState,
+                  selectedProduct: 'All Products',
+                }));
+                setMenuOpen(false);
+              }}
             >
-              {deal.dealName}
-            </Dropdown.Item>
-          ))}
-        </Dropdown.Menu>
-      </Dropdown>
+              All Products
+            </div>
+            {state?.deals?.map(deal => (
+              <div
+                className="hoverable-button"
+                style={{ padding: '12px 16px', cursor: 'pointer' }}
+                onClick={() => {
+                  setState(prevState => ({
+                    ...prevState,
+                    selectedProduct: deal.dealName,
+                  }));
+                  setMenuOpen(false);
+                }}
+                key={deal._id}
+              >
+                {deal.dealName}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="dashboard-content" style={{ paddingTop: '20px' }}>
         <div className="visitor-count" style={{ padding: '20px' }}>
@@ -227,7 +246,7 @@ function Dashboard(props) {
           <p>{state.visitorCount}</p>
         </div>
 
-        <div className="chart">
+        <div className="chart" style={{backgroundColor: 'white', border: '1px solid #c8dcf3', margin: '10px', width: '80%', height: '30%'}}>
           {state?.chartData?.datasets && state.chartData.datasets.length > 0 && (
             <Line
               data={state.chartData}
@@ -243,12 +262,34 @@ function Dashboard(props) {
                     },
                   },
                 },
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: 'rgb(0, 0, 0)', // Change the legend color to black
+                    },
+                  },
+                  tooltip: {
+                    backgroundColor: '#000000', // Change the tooltip background color to white
+                  },
+                },
+                layout: {
+                  padding: 10, // Add some padding
+                },
+                elements: {
+                  line: {
+                    borderColor: '#000000', // Add border to the line
+                    borderWidth: 1,
+                  },
+                  point: {
+                    borderColor: '#000000', // Add border to the points
+                  },
+                },
               }}
             />
           )}
         </div>
 
-        <div className="country-chart">
+        <div className="country-chart" style={{backgroundColor: 'white', border: '1px solid #c8dcf3', margin: '10px', width: '80%', height: '30%'}}>
           {state?.countryChartData?.datasets &&
             state.countryChartData.datasets.length > 0 && (
               <Bar

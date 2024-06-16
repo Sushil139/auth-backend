@@ -11,6 +11,7 @@ import {
   editDeal,
   deleteDeal,
 } from '../../actions/authActions';
+import './Deal.css';
 
 function Deal(props) {
   const navigate = useNavigate();
@@ -123,116 +124,91 @@ function Deal(props) {
   return (
     <div
       style={{ height: '75vh', maxHeight: '75vh', overflowY: 'auto' }}
-      className="container valign-wrapper"
+      // className="container valign-wrapper"
     >
-      <div className="row">
-        <div className="landing-copy col s12 center-align">
-          {deals.map((deal, index) => (
+      <div class="header">
+        <h3>Deals</h3>
+        <Button className="add-deal-btn" onClick={handleAddDeal}>
+          ADD DEAL
+        </Button>
+      </div>
+      <div className="deals-container">
+        {deals.map((deal, index) => (
+          <div key={deal._id} className="deal-card">
             <div
-              key={deal._id}
+              ref={refs.current[deal._id]}
               style={{
-                border: '1px solid black',
-                padding: '10px',
-                margin: '10px',
-                position: 'relative',
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
               }}
             >
-              <div
-                ref={refs.current[deal._id]}
-                style={{
-                  position: 'absolute',
-                  top: '10px',
-                  right: '10px',
-                }}
+              <Button
+                variant="success"
+                onClick={() =>
+                  setOpenDealId(openDealId === deal._id ? null : deal._id)
+                }
               >
-                <Button
-                  variant="success"
-                  onClick={() =>
-                    setOpenDealId(openDealId === deal._id ? null : deal._id)
-                  }
-                >
-                  <i className="material-icons">more_vert</i>
-                </Button>
+                <i className="material-icons">more_vert</i>
+              </Button>
 
-                {openDealId === deal._id && (
-                  <div
-                    ref={refs.current[deal._id]}
-                    style={{
-                      position: 'absolute',
-                      top: '40px',
-                      right: '10px',
-                      padding: '0px',
-                      borderRadius: '5px',
-                      boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    <ButtonGroup vertical>
-                      <Button
-                        style={{
-                          width: '100px',
-                          fontSize: '80%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        onClick={() => handleEditDeal(deal._id)}
-                      >
-                        <i className="material-icons">edit</i> Edit
-                      </Button>
-                      <Button
-                        style={{
-                          width: '100px',
-                          fontSize: '80%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        onClick={() => handleGetCode(deal._id)}
-                      >
-                        <i className="material-icons"></i> Get Code
-                      </Button>
-                      <Button
-                        style={{
-                          width: '100px',
-                          fontSize: '80%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        onClick={() => handleDeleteDeal(deal._id)}
-                      >
-                        <i className="material-icons">delete</i> Delete
-                      </Button>
-                    </ButtonGroup>
-                  </div>
-                )}
-              </div>
-              <h2>{deal.dealName}</h2>
-              <p>{deal.description}</p>
+              {openDealId === deal._id && (
+                <div
+                  ref={refs.current[deal._id]}
+                  style={{
+                    position: 'absolute',
+                    top: '40px',
+                    right: '10px',
+                    padding: '0px',
+                    borderRadius: '0px',
+                    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <ButtonGroup vertical>
+                    <Button
+                      style={{
+                        width: '100px',
+                        fontSize: '70%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      onClick={() => handleEditDeal(deal._id)}
+                    >
+                      <i className="material-icons">edit</i> Edit
+                    </Button>
+                    <Button
+                      style={{
+                        width: '100px',
+                        fontSize: '70%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      onClick={() => handleGetCode(deal._id)}
+                    >
+                      <i className="material-icons"></i> Get-Code
+                    </Button>
+                    <Button
+                      style={{
+                        width: '100px',
+                        fontSize: '70%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      onClick={() => handleDeleteDeal(deal._id)}
+                    >
+                      <i className="material-icons">delete</i> Delete
+                    </Button>
+                  </ButtonGroup>
+                </div>
+              )}
             </div>
-          ))}
-          <div
-            className="container"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-            }}
-          >
-            <button
-              style={{
-                width: '150px',
-                borderRadius: '3px',
-                letterSpacing: '1.5px',
-                marginTop: '1rem',
-              }}
-              onClick={handleAddDeal}
-              className="btn btn-large waves-effect waves-light hoverable blue accent-3"
-            >
-              Add Deal
-            </button>
+            <h3>{deal.dealName}</h3>
+            <p>{deal.description}</p>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

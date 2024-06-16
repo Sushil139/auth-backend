@@ -54,7 +54,7 @@ const MainContent = () => {
       {['/', '/register', '/login'].includes(location.pathname) ? null : (
         <Home />
       )}
-      <div style={{ flex: 1, backgroundColor: '#F6F5F2' }}>
+      <div style={{ flex: 1, backgroundColor: '#EFF3F5' }}>
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/edit-deal/:_id" element={<EditDeal />} />
