@@ -9,7 +9,6 @@ function Home() {
       style={{
         display: 'flex',
         height: '100vh',
-        width: '20%',
         backgroundColor: 'FFF7FC',
       }}
     >
@@ -18,7 +17,7 @@ function Home() {
           position: 'flex',
           left: '0',
           height: '100%',
-          width: '10%',
+          width: '200px',
           backgroundColor: 'white',
           color: '#000',
           padding: '20px',

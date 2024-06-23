@@ -51,14 +51,15 @@ const MainContent = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      {['/', '/register', '/login'].includes(location.pathname) ? null : (
+      {['/', '/register', '/login', '/create-deal'].includes(
+        location.pathname
+      ) ? null : (
         <Home />
       )}
       <div style={{ flex: 1, backgroundColor: '#EFF3F5' }}>
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/edit-deal/:_id" element={<EditDeal />} />
-          <Route path="/create-deal" element={<CreateDeal />} />
           <Route path="/deal" element={<Deal />} />
           <Route path="/get-code/:_id" element={<GetCode />} />
         </Routes>
@@ -77,6 +78,7 @@ const App = () => {
             <Route path="/" element={<Landing />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/create-deal" element={<CreateDeal />} />
           </Routes>
           <MainContent />
         </div>

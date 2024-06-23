@@ -41,7 +41,7 @@ function CreateDeal(props) {
     fetchCountryParity();
   }, []);
 
-  console.log('locationDeals', state.locationDeals)
+  console.log('locationDeals', state.locationDeals);
 
   const onChange = e => {
     setState(prevState => ({ ...prevState, [e.target.id]: e.target.value }));
@@ -99,80 +99,123 @@ function CreateDeal(props) {
   };
 
   if (state.locationNext && state.holidayNext) {
-    return <LocationHolidayDiscount
-    onChange={onChange}
-    state={state}
-    setState={setState}
-    onNextLocation={onNextLocation}
-    onSubmit={onSubmit}
-    screen={screen}
-  />;
+    return (
+      <LocationHolidayDiscount
+        onChange={onChange}
+        state={state}
+        setState={setState}
+        onNextLocation={onNextLocation}
+        onSubmit={onSubmit}
+        screen={screen}
+      />
+    );
   } else if (state.locationNext && !state.holidayNext) {
-    return <ReturnLocationDiscount onChange={onChange} state={state} setState={setState} onSubmit={onSubmit} />;
+    return (
+      <ReturnLocationDiscount
+        onChange={onChange}
+        state={state}
+        setState={setState}
+        onSubmit={onSubmit}
+      />
+    );
   } else if (state.holidayNext) {
-    return <ReturnHolidayDiscount onChange={onChange} state={state} onSubmit={onSubmit} />;
+    return (
+      <ReturnHolidayDiscount
+        onChange={onChange}
+        state={state}
+        onSubmit={onSubmit}
+      />
+    );
   }
 
   return (
-    <form noValidate onSubmit={onSubmit}>
-      <div>
-        <label htmlFor="dealName">Deal Name</label>
-        <input
-          onChange={onChange}
-          value={state.dealName}
-          id="dealName"
-          type="text"
-        />
-      </div>
-      <div>
-        <label htmlFor="description">Description</label>
-        <input
-          onChange={onChange}
-          value={state.description}
-          id="description"
-          type="text"
-        />
-      </div>
-      <div>
-        <label htmlFor="productLink">Product Link</label>
-        <input
-          onChange={onChange}
-          value={state.productLink}
-          id="productLink"
-          type="text"
-        />
-      </div>
+    <div class="container">
+      <h1>Create Deal</h1>
+      <button
+        class="back-button"
+        style={{
+          color: 'black',
+          buttonType: 'outline',
+          width: '35px', // set width
+          height: '35px', // set height
+          borderRadius: '50%', // make it circular
+          display: 'flex', // center the content
+          boxShadow: '0px 3px 6px #00000029',
+          justifyContent: 'center',
+          alignItems: 'center',
+          hover: {
+            cursor: 'pointer',
+            backgroundColor: '#f0f0f0',
+          },
+        }}
+        onClick={() => {
+          navigate('/deal');
+        }}
+      ></button>
+      <form noValidate onSubmit={onSubmit}>
+        <div class="form-group">
+          <label for="dealName">Deal Name</label>
+          <input
+            placeholder="Enter deal name"
+            onChange={onChange}
+            value={state.dealName}
+            id="dealName"
+            type="text"
+          />
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            rows="10"
+            placeholder="Describe the deal"
+            onChange={onChange}
+            value={state.description}
+            id="description"
+            type="text"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label for="productLink">Product Link</label>
+          <input
+            onChange={onChange}
+            value={state.productLink}
+            id="productLink"
+            type="text"
+            placeholder="Enter product URL"
+          />
+        </div>
 
-      {/* Checkboxes for location and holiday discounts */}
-      <div className="checkbox-container">
-        <input
-          className="button-checkbox"
-          onChange={onCheck}
-          checked={state.isLocationDiscount}
-          id="isLocationDiscount"
-          type="checkbox"
-        />
-        <label htmlFor="isLocationDiscount">Location-based Discount</label>
-      </div>
-      <div className="checkbox-container">
-        <input
-          className="button-checkbox"
-          onChange={onCheck}
-          checked={state.isHolidayDiscount}
-          id="isHolidayDiscount"
-          type="checkbox"
-        />
-        <label htmlFor="isHolidayDiscount">Holiday-based Discount</label>
-      </div>
+        {/* Checkboxes for location and holiday discounts */}
+        <div class="checkbox-container">
+          <div className="checkbox-group">
+            <input
+              onChange={onCheck}
+              checked={state.isLocationDiscount}
+              id="isLocationDiscount"
+              type="checkbox"
+            />
+            <label htmlFor="isLocationDiscount">Location-based Discount</label>
+          </div>
+          <div className="checkbox-group">
+            <input
+              onChange={onCheck}
+              checked={state.isHolidayDiscount}
+              id="isHolidayDiscount"
+              type="checkbox"
+            />
+            <label htmlFor="isHolidayDiscount">Holiday-based Discount</label>
+          </div>
+        </div>
 
-      <button type="button" onClick={onNext}>
-        Next
-      </button>
-    </form>
+        <button type="submit" onClick={onNext}>
+          Next
+        </button>
+      </form>
+    </div>
   );
 }
 
-function ReturnLocationDiscount({onChange, state, setState, onSubmit}) {
+function ReturnLocationDiscount({ onChange, state, setState, onSubmit }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [countryName, setCountryName] = useState('');
   const [discount, setDiscount] = useState('');
@@ -291,7 +334,7 @@ function ReturnLocationDiscount({onChange, state, setState, onSubmit}) {
   );
 }
 
-function ReturnHolidayDiscount({onChange, state, onSubmit}) {
+function ReturnHolidayDiscount({ onChange, state, onSubmit }) {
   return (
     <form noValidate onSubmit={onSubmit}>
       <div>
@@ -330,18 +373,31 @@ function ReturnHolidayDiscount({onChange, state, onSubmit}) {
   );
 }
 
-function LocationHolidayDiscount(
-  {onChange,
+function LocationHolidayDiscount({
+  onChange,
   state,
   setState,
   onNextLocation,
   onSubmit,
-  screen}
-) {
+  screen,
+}) {
   if (screen === 'location') {
-    return <ReturnLocationDiscount onChange={onChange} state={state} setState={setState} onSubmit={onSubmit} />;
+    return (
+      <ReturnLocationDiscount
+        onChange={onChange}
+        state={state}
+        setState={setState}
+        onSubmit={onSubmit}
+      />
+    );
   } else if (screen === 'holiday') {
-    return <ReturnHolidayDiscount onChange={onChange} state={state} onSubmit={onSubmit} />;
+    return (
+      <ReturnHolidayDiscount
+        onChange={onChange}
+        state={state}
+        onSubmit={onSubmit}
+      />
+    );
   }
 }
 

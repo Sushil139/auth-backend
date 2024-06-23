@@ -124,7 +124,6 @@ function Deal(props) {
   return (
     <div
       style={{ height: '75vh', maxHeight: '75vh', overflowY: 'auto' }}
-      // className="container valign-wrapper"
     >
       <div class="header">
         <h3>Deals</h3>
